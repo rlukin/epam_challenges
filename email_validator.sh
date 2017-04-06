@@ -6,7 +6,7 @@
 
 # Description
 # ---------------------------------------------------
-# This script validate input string for email address
+# This script validate input string(s) for email address
 # ---------------------------------------------------
 
 # Usefull links
@@ -19,39 +19,48 @@
 
 # Print usage
 usage() {
-  echo -n "$0 [OPTION] [STRING]
+ echo -n "  Usage:
+ $0 [OPTION] [STRINGS]
 
- Verify string as valid email format
+ Description:
+ Verify strings as valid email format
 
  Options:
-  -h, --help        Display this help and exit"
-  echo
+  -h, --help        Display this help and exit
+ 
+ Example:
+ $1 ./email_validator.sh kenny@pepper.ru 1@shut.org 1.1.1.
+" 
   exit 1
 }
 
-regexp='(?:[a-z0-9!#$%&'
-regexp+="'"
-regexp+='*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'
-regexp+="'"
-regexp+='*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])'
 
+#regexp='(?:[a-z0-9!#$%&'
+#regexp+="'"
+#regexp+='*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'
+#regexp+="'"
+#regexp+='*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])'
 
-echo $regexp
+regexp='\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b'
 
 validate() {
-echo "$1"
 if [[ $1 =~ $regexp ]]; then
-  echo -e "\e[32m$1"
-  echo "seems valid"
+  echo -e "\e[32;1m$1\e[0m seems valid"
+else
+  echo -e "\e[31;1m$1\e[0m not valid"
 fi
 }
 
 # Read the options
 if [[ $# -eq 0 ]]; then
   usage
-elif [[ $# -eq 1 ]]; then
-  case "$1" in
-    -h|--help) usage >&2;;
-    *) validate "$1";;
-  esac
+elif [[ $1 =~ -h|--help ]]; then
+  usage >&2
+else
+  while (( "$#" )); do
+  validate "$1"
+  shift
+  done
 fi
+
+exit 0
