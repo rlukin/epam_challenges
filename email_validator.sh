@@ -71,6 +71,13 @@ validate() {
 
   #check correctness for quotes (RFC 2822 section 3.4.1, 4.4)
   #TODO 
+  echo -n "Quotting check"
+  if [[ $localpart =~ [\'\"] ]]; then 
+    if [[ $localpart =~ \".+\"(\.\".+\")*|\'.+\'(\.\'.+\')* ]]; then passed
+      else failed
+   fi
+   else passed
+  fi
 
   #check periods (RFC 2822 section 3.4.1)
   echo -n "Localpart periods check"
@@ -80,7 +87,7 @@ validate() {
   
   #check allowed symbols (RFC 2822 section 3.4.1)
   echo -n "Allowed symbols check"
-  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.`"@]')
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.\`"@]')
   if [[ -z $allowed_check ]]; then passed
 	 else failed
    fi
