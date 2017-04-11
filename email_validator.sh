@@ -69,10 +69,22 @@ validate() {
   domain=$(echo $1 | grep --color=never -E -o '[^@]+$')
   localpart=$(echo $1 | sed "s:@$domain$::")
 
+  echo $domain
+  echo $localpart
+  echo -n "Domain not empty check"
+  if [[ -z $domain ]]; then failed
+    else passed
+  fi
+
+  echo -n "Local not empty check"
+  if [[ -z $domain ]]; then failed
+    else passed
+  fi
+
   #check correctness for quotes (RFC 2822 section 3.4.1, 4.4)
   echo -n "Quotes check"
-  if [[ $localpart =~ [\'\"] ]]; then 
-    if [[ $localpart =~ \".+\"(\.\".+\")*|\'.+\'(\.\'.+\')* ]]; then passed
+  if [[ $localpart =~ [\"] ]]; then 
+    if [[ $localpart =~ \".+\"(\.\".+\")* ]]; then passed
       else failed
    fi
    else passed
@@ -85,11 +97,32 @@ validate() {
   fi
   
   #check allowed symbols (RFC 2822 section 3.4.1)
-  echo -n "Allowed symbols check"
-  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.\`"@ ]')
-  if [[ -z $allowed_check ]]; then passed
-	 else failed
-   fi
+  #test for localpart
+  echo -n "Local symbols check"
+  #if contains quotes
+  echo "echo $localpart | grep -E -o --color=never -e '[^!#$%&*+-    =?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/\.\`\"@ ]' | grep -E -    o --color=never \"[^']\""
+  if [[ $localpart =~ [^\"] ]]; then 
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%&*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/\.\`"@ ]' | grep -E -o --color=never "[^']")
+  echo $allowed_check
+    if [[ -z $allowed_check ]]; then passed
+	   else failed
+    fi
+  else
+  #if doesnt contain quotes
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%&*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/\.\`"@]' | grep -E -o --color=never "[^']")
+  echo $allowed_check
+  echo $localpart
+    if [[ -z $allowed_check ]]; then passed
+	   else failed
+    fi
+  fi
+
+  #test for domain
+  echo -n "Domain symbols check"
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[A-Za-z0-9]' | grep -E -o --color=never -e '[^\.]')
+    if [[ -z $allowed_check ]]; then passed
+	   else failed
+    fi
 
   #check allowed length (RFC 1035 section 2.3.4, RFC 2821 section 4.5.3.1)
   echo -n "Domain length check"
