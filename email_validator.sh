@@ -70,8 +70,7 @@ validate() {
   localpart=$(echo $1 | sed "s:@$domain$::")
 
   #check correctness for quotes (RFC 2822 section 3.4.1, 4.4)
-  #TODO 
-  echo -n "Quotting check"
+  echo -n "Quotes check"
   if [[ $localpart =~ [\'\"] ]]; then 
     if [[ $localpart =~ \".+\"(\.\".+\")*|\'.+\'(\.\'.+\')* ]]; then passed
       else failed
@@ -87,17 +86,26 @@ validate() {
   
   #check allowed symbols (RFC 2822 section 3.4.1)
   echo -n "Allowed symbols check"
-  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.\`"@]')
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.\`"@ ]')
   if [[ -z $allowed_check ]]; then passed
 	 else failed
    fi
 
-  #brackets for domain (RFC 2822 section 3.4.1)
-  #domain correctness (RFC 1035 2.3.4)
   #check allowed length (RFC 1035 section 2.3.4, RFC 2821 section 4.5.3.1)
-  #check hyphens (RFC 1035, section 2.3.4)
-  #check for a and mx records (RFC 2821, section 3.6)
-  #
+  echo -n "Domain length check"
+  domain_len=$(echo -n $domain | wc -c)
+
+  if (( $domain_len > 255 )); then failed
+    else passed
+  fi
+  #local part length check 
+  echo -n "Local length check"
+  local_len=$(echo -n $localpart | wc -c)
+  if (( $local_len > 63 )); then failed
+    else passed
+  fi
+
+  #final
   echo "Failed $failed/$total checks."
   if [[ $failed -eq 0 ]]; then
 	echo -e "\e[32;1m$1\e[0m seems valid"
@@ -121,5 +129,5 @@ main(){
   fi
 }
 
-main $@
+main "$@"
 exit 0
