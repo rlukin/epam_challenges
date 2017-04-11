@@ -44,32 +44,55 @@ usage() {
 regexp='\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b'
 
 failed(){
-	echo -e "\t\e[31;1mFail\e[0m"
+  ((total+=1))
+  ((failed+=1))
+  echo -e "\t\e[31;1mFail\e[0m"
 }
 
 passed(){
-	echo -e "\t\e[32;1mOK\e[0m"
+  ((total+=1))
+  echo -e "\t\e[32;1mOK\e[0m"
 }
 validate() {
+  total=0
+  failed=0
+
   echo -e "Validating \e[32;1m$1\e[0m:\n"
+
   #check domain existence (RFC2822 section 2.2)
-  echo -n "Domain check"
-  if [[ $1 =~ ^.+@[^@]+$ ]]; then
-	passed
-  else 
-	failed
+  echo -n "Domain separation check"
+  if [[ $1 =~ ^.+@[^@]+$ ]]; then passed
+    else failed
   fi
+
+  #split domain and localpart
+  domain=$(echo $1 | grep --color=never -E -o '[^@]+$')
+  localpart=$(echo $1 | sed "s:@$domain$::")
+
   #check correctness for quotes (RFC 2822 section 3.4.1, 4.4)
+  #TODO 
+
   #check periods (RFC 2822 section 3.4.1)
+  echo -n "Localpart periods check"
+  if [[ $localpart =~ ^\.|\.$|\.\.+ ]]; then failed
+    else passed
+  fi
+  
   #check allowed symbols (RFC 2822 section 3.4.1)
+  echo -n "Allowed symbols check"
+  allowed_check=$(echo $localpart | grep -E -o --color=never -e '[^!#$%*+-=?^_{|}~A-Za-z0-9]' | grep -E -o --color=never -e '[^/.`"@]')
+  if [[ -z $allowed_check ]]; then passed
+	 else failed
+   fi
+
   #brackets for domain (RFC 2822 section 3.4.1)
   #domain correctness (RFC 1035 2.3.4)
   #check allowed length (RFC 1035 section 2.3.4, RFC 2821 section 4.5.3.1)
   #check hyphens (RFC 1035, section 2.3.4)
   #check for a and mx records (RFC 2821, section 3.6)
   #
-
-  if [[ $1 =~ $regexp ]]; then
+  echo "Failed $failed/$total checks."
+  if [[ $failed -eq 0 ]]; then
 	echo -e "\e[32;1m$1\e[0m seems valid"
   else
 	echo -e "\e[31;1m$1\e[0m not valid"
