@@ -3,6 +3,7 @@
 ##############################
 # email rfc 2822 validator
 # by rlukin
+# regexp stolen from - "http://www.ex-parrot.com/~pdw/Mail-RFC822-Address.html"
 ##############################
 
 import re
@@ -22,9 +23,8 @@ regex = r'''(?:(?:\r\n)?[ \t])*(?:(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\
 regex_compiled = re.compile(regex)
 
 for email in sys.argv[1:]:
-	print "Verify email:", repr(email),
 	if (regex_compiled.match(email) != None):
-		print bcolors.OKGREEN+"\t\tValid!"+bcolors.ENDC
+		print bcolors.OKGREEN+"Valid email!\t\t"+bcolors.ENDC, repr(email)
 	else:
-		print bcolors.FAIL+"\t\tNot valid!"+bcolors.ENDC
+		print bcolors.FAIL+"Not valid email!\t"+bcolors.ENDC, repr(email)
 
